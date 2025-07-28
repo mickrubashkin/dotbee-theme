@@ -27,3 +27,5 @@ build/
 
 # System files
 Thumbs.db
+
+recaptcha-config.php
