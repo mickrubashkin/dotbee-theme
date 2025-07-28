@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("test autodeploy from github");
   const burger = document.querySelector(".burger");
   const mobileMenu = document.querySelector(".header__mobile-menu");
 

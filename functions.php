@@ -47,9 +47,11 @@ function dotbee_waitlist_form() {
 
   $admin_email = get_option('admin_email');
   $email1 = 'mikhail.rubashkin@gmail.com';
-  $email = 'hello@dotbee.se';
+  $email2 = 'hello@dotbee.se';
 
-  $fields = ['name', 'company', 'email', 'job_title', 'phone', 'message'];
+  // var_dump($admin_email);
+
+  $fields = ['name', 'company', 'email', 'phone', 'message'];
   $data = [];
   foreach ($fields as $field) {
     $data[$field] = sanitize_text_field($_POST[$field] ?? '');
@@ -59,16 +61,20 @@ function dotbee_waitlist_form() {
   if (empty($data['email']) || !is_email($data['email'])) {
     wp_send_json_error('Please enter a valid email address.');
   }
-  if (empty($data['company']) || empty($data['job_title'])) {
-    wp_send_json_error('Fill in all required fields.');
-  }
+  // if (empty($data['company']) || empty($data['job_title'])) {
+  //   wp_send_json_error('Fill in all required fields.');
+  // }
 
   $body = "New waitlist form submission:\n\n";
   foreach ($data as $k => $v) {
     $body .= ucfirst(str_replace('_', ' ', $k)) . ": " . $v . "\n";
   }
 
+  error_log("Sending email to: " . $admin_email);
+  error_log("Email body:\n" . $body);
   $sent = wp_mail($admin_email, 'Waitlist Form Submission', $body);
+  $sent_to_mickhail = wp_mail($email1, 'Waitlist Form Submission', $body);
+  $sent_to_hello = wp_mail($email2, 'Waitlist Form Submission', $body);
 
   if ($sent) {
     wp_send_json_success('Thank you! Your application has been received.');
