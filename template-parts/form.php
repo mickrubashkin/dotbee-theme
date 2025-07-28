@@ -60,16 +60,16 @@ if ($lang === 'sv') {
                 <?php endfor; ?> -->
 
                 <div class="form-group">
-                    <innput type="text" name="name" placeholder="<?php echo($placeholder_name) ?>" required>
+                    <input type="text" name="name" placeholder="<?php echo($placeholder_name) ?>" required>
                 </div>
                 <div class="form-group">
-                    <innput type="text" name="company" placeholder="<?php echo($placeholder_company) ?>">
+                    <input type="text" name="company" placeholder="<?php echo($placeholder_company) ?>">
                 </div>
                 <div class="form-group">
-                    <innput type="email" name="email" placeholder="<?php echo($placeholder_email) ?>" required>
+                    <input type="email" name="email" placeholder="<?php echo($placeholder_email) ?>" required>
                 </div>
                 <div class="form-group">
-                    <innput type="tel" name="phone" placeholder="<?php echo($placeholder_phone) ?>" required>
+                    <input type="tel" name="phone" placeholder="<?php echo($placeholder_phone) ?>" required>
                 </div>
                 <div class="form-group">
                     <textarea name="message" placeholder="<?php echo($placeholder_message) ?>" required></textarea>
