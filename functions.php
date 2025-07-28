@@ -1,4 +1,9 @@
 <?php
+// reCAPTCHA
+$recaptcha_config_path = get_template_directory() . '/recaptcha-config.php';
+if (file_exists($recaptcha_config_path)) {
+  require_once $recaptcha_config_path;
+}
 function dotbee_theme_setup() {
   add_theme_support('title-tag');
   add_theme_support('post-thumbnails');
@@ -43,6 +48,32 @@ function dotbee_waitlist_form() {
   $form_start = intval($_POST['form_start'] ?? 0);
   if (!$form_start || (time() - $form_start) < 2) {
     wp_send_json_error('Spam detected (timer).');
+  }
+
+  // reCAPTCHA v3 validation
+  $recaptcha_response = $_POST['g-recaptcha-response'] ?? '';
+  $recaptcha_secret = defined('RECAPTCHA_SECRET_KEY') ? RECAPTCHA_SECRET_KEY : '';
+
+  $verify_response = wp_remote_post('https://www.google.com/recaptcha/api/siteverify', [
+    'body' => [
+      'secret' => $recaptcha_secret,
+      'response' => $recaptcha_response,
+      'remoteip' => $_SERVER['REMOTE_ADDR']
+    ]
+  ]);
+
+  if (is_wp_error($verify_response)) {
+    wp_send_json_error('Captcha error.');
+  }
+
+  $recaptcha_result = json_decode(wp_remote_retrieve_body($verify_response));
+
+  if (
+    empty($recaptcha_result->success) ||
+    $recaptcha_result->score < 0.5 ||
+    $recaptcha_result->action !== 'submit'
+  ) {
+    wp_send_json_error('Captcha verification failed.');
   }
 
   $admin_email = get_option('admin_email');

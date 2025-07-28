@@ -13,6 +13,8 @@ $languages = pll_the_languages(['raw' => 1]);
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
   
   <?php wp_head(); ?>
+
+  <script src="https://www.google.com/recaptcha/api.js?render=6LcYNJIrAAAAAOFWmOCCOgfL6lDxAKMPFYlg0ohe"></script>
 </head>
 
 <body <?php body_class(); ?>>

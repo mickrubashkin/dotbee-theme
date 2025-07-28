@@ -84,6 +84,16 @@ if ($lang === 'sv') {
                     </div>
                 <?php endif; ?>
 
+                <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+
+                <script>
+                    grecaptcha.ready(function () {
+                        grecaptcha.execute('6LcYNJIrAAAAAOFWmOCCOgfL6lDxAKMPFYlg0ohe', { action: 'submit' }).then(function (token) {
+                        document.getElementById('g-recaptcha-response').value = token;
+                        });
+                    });
+                </script>
+
                 <button type="submit"><?= esc_html($form_button ?: 'Submit'); ?></button>
             </form>
 
