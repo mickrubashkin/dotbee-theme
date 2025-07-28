@@ -8,6 +8,10 @@ jobs:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
 
+      - name: 🔐 Create reCAPTCHA config
+        run: |
+          echo "<?php define('RECAPTCHA_SECRET_KEY', '${{ secrets.RECAPTCHA_SECRET_KEY }}');" > wp-content/themes/dotbee/recaptcha-config.php
+
       - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -20,8 +24,3 @@ jobs:
             **/.git*/**
             **/node_modules/**
             fileToExclude.txt
-
-      - name: 🔐 Create reCAPTCHA config
-        run: |
-          echo "<?php define('RECAPTCHA_SECRET_KEY', '${{ secrets.RECAPTCHA_SECRET_KEY }}');" > recaptcha-config.php
-        working-directory: /dotbee.se/public_html/wp-content/themes/dotbee/
