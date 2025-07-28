@@ -776,7 +776,9 @@ main {
 
 .footer__phone:hover,
 .footer__email:hover,
-.footer__linkedin:hover {
+.footer__linkedin:hover,
+.footer__privacy a:hover,
+.footer__terms a:hover {
   color: #fff;
 }
 
@@ -936,6 +938,8 @@ main {
 }
 
 a.terms-link {
+  display: inline-block;
+  padding-bottom: 5px;
   text-decoration: none;
   color: #000;
   font-weight: 400;
