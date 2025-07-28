@@ -10,6 +10,7 @@ jobs:
 
       - name: 🔐 Create reCAPTCHA config
         run: |
+          mkdir -p wp-content/themes/dotbee
           echo "<?php define('RECAPTCHA_SECRET_KEY', '${{ secrets.RECAPTCHA_SECRET_KEY }}');" > wp-content/themes/dotbee/recaptcha-config.php
 
       - name: 📂 Sync files
