@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.3.4
+        uses: actions/checkout@v4
 
       - name: Upload to Loopia via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4
