@@ -1,0 +1,29 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn.lock
+package-lock.json
+
+# Mac OS
+.DS_Store
+
+# VSCode
+.vscode/
+
+# Logs
+*.log
+
+# Sass cache
+.sass-cache/
+*.css.map
+
+# Build output (если используешь какую-то сборку)
+dist/
+build/
+
+# dotenv или прочие секреты (если есть)
+.env
+.env.local
+
+# System files
+Thumbs.db
