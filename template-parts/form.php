@@ -2,6 +2,22 @@
 $form_title = get_field('form_title');
 $form_button = get_field('form_button');
 $form_policy = get_field('form_policy');
+
+$lang = pll_current_language(); // 'en' | 'sv'
+
+if ($lang === 'sv') {
+    $placeholder_name = '*Name';
+    $placeholder_company = '*Company';
+    $placeholder_email = '*Email';
+    $placeholder_phone = '*Phone';
+    $placeholder_message = 'Your Message';
+} else {
+    $placeholder_name = '*Namn';
+    $placeholder_company = '*Företag';
+    $placeholder_email = '*E-postadress';
+    $placeholder_phone = '*Telefonnummer';
+    $placeholder_message = 'Meddelande';
+}
 ?>
 
 <section id="contact" class="waitlist color-section" data-bg="#EEF0FF">
@@ -17,7 +33,7 @@ $form_policy = get_field('form_policy');
                 <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off">
                 <input type="hidden" name="form_start" id="form_start">
 
-                <?php for ($i = 1; $i <= 6; $i++): ?>
+                <!-- <?php for ($i = 1; $i <= 6; $i++): ?>
                     <?php
                     $ph = get_field("form_field_{$i}_placeholder");
                     $name = get_field("form_field_{$i}_name");
@@ -41,7 +57,23 @@ $form_policy = get_field('form_policy');
                         >
                     </div>
                     <?php endif; ?>
-                <?php endfor; ?>
+                <?php endfor; ?> -->
+
+                <div class="form-group">
+                    <innput type="text" name="name" placeholder="<?php echo($placeholder_name) ?>" required>
+                </div>
+                <div class="form-group">
+                    <innput type="text" name="company" placeholder="<?php echo($placeholder_company) ?>">
+                </div>
+                <div class="form-group">
+                    <innput type="email" name="email" placeholder="<?php echo($placeholder_email) ?>" required>
+                </div>
+                <div class="form-group">
+                    <innput type="tel" name="phone" placeholder="<?php echo($placeholder_phone) ?>" required>
+                </div>
+                <div class="form-group">
+                    <textarea name="message" placeholder="<?php echo($placeholder_message) ?>" required></textarea>
+                </div>
 
                 <?php if ($form_policy): ?>
                     <div class="form-policy">
