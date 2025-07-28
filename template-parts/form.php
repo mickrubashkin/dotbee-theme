@@ -6,17 +6,17 @@ $form_policy = get_field('form_policy');
 $lang = pll_current_language(); // 'en' | 'sv'
 
 if ($lang === 'sv') {
-    $placeholder_name = '*Name';
-    $placeholder_company = '*Company';
-    $placeholder_email = '*Email';
-    $placeholder_phone = '*Phone';
-    $placeholder_message = 'Your Message';
-} else {
     $placeholder_name = '*Namn';
     $placeholder_company = '*Företag';
     $placeholder_email = '*E-postadress';
     $placeholder_phone = '*Telefonnummer';
     $placeholder_message = 'Meddelande';
+} else {
+    $placeholder_name = '*Name';
+    $placeholder_company = '*Company';
+    $placeholder_email = '*Email';
+    $placeholder_phone = '*Phone';
+    $placeholder_message = 'Your Message';
 }
 ?>
 
