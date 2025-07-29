@@ -95,8 +95,9 @@ function dotbee_waitlist_form() {
   $email_hello = 'hello@dotbee.se';
   $email_noreply = 'no-reply@dotbee.se';
 
-  error_log("Sending email to: " . $email_admin);
-  error_log("Email body:\n" . $body);
+  // error_log("Sending email to: " . $email_admin);
+  // error_log("Email body:\n" . $body);
+  error_log("On line 100 ok.");
 
   $lang = pll_current_language(); // 'en' | 'sv'
 
@@ -143,13 +144,16 @@ function dotbee_waitlist_form() {
 ';
   }
 
-  $sent_to_hello = wp_mail($email_hello, 'Waitlist Form Submission', $body);
+  // $sent_to_hello = wp_mail($email_hello, 'Waitlist Form Submission', $body);
   $sent_to_noreply = wp_mail($email_noreply, 'Waitlist Form Submission', $body);
+  error_log("Line 149 ok.");
   
 
   if ($sent_to_noreply) {
-    wp_send_json_success($message_success);
+    error_log("Line 153 ok.");
+    error_log("Autoreply trigger OK. Sending autoreply to: " . $fields['email']);
     wp_mail($fields['email'], $autoreply_subject, $autoreply_text, $headers);
+    wp_send_json_success($message_success);
   } else {
     wp_send_json_error('Mail server error. Try again later.');
   }
