@@ -110,7 +110,7 @@ function dotbee_waitlist_form() {
 
 <p>Du är nu officiellt med på vår väntelista, och vi hör av oss så snart vi kan.</p>
 
-<p>Tills dess, håll gärna utkik i inkorgen, och följ oss på <a href="https://www.linkedin.com/company/dotbee">LinkedIn</a> för de senaste uppdateringarna, insikterna och en inblick i vad vi bygger på Dotbee.</p>
+<p>Tills dess, håll gärna utkik i inkorgen, och följ oss på <a href="https://www.linkedin.com/company/dotbeeab/">LinkedIn</a> för de senaste uppdateringarna, insikterna och en inblick i vad vi bygger på Dotbee.</p>
 
 <p>Tveka inte att <a href="mailto:hello@dotbee.se">kontakta oss om du har några frågor</a>!</p>
 
@@ -130,7 +130,7 @@ function dotbee_waitlist_form() {
 
 <p>You\'re now officially on our waiting list, and we\'ll get in touch as soon as we can.</p>
 
-<p>In the meantime, keep an eye on your inbox and feel free to <a href="https://www.linkedin.com/company/dotbee">follow us on LinkedIn</a> for the latest updates, insights, and a behind-the-scenes look at what we\'re building at Dotbee.</p>
+<p>In the meantime, keep an eye on your inbox and feel free to <a href="https://www.linkedin.com/company/dotbeeab/">follow us on LinkedIn</a> for the latest updates, insights, and a behind-the-scenes look at what we\'re building at Dotbee.</p>
 
 <p>Don\'t hesitate to <a href="mailto:hello@dotbee.se">reach out if you have any questions</a>!</p>
 
