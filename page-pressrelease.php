@@ -12,23 +12,25 @@ $text = get_field('press_release_text');
 <main>
     <section class="press-release">
         <div class="hero__hr"></div>
-    <?php if ($picture): ?>
-        <div class="press-release__image">
-        <img src="<?= esc_url($picture['url']); ?>" alt="<?= esc_attr($picture['alt']); ?>">
-        </div>
-    <?php endif; ?>
+        <div class="press-release__inner">
+            <?php if ($picture): ?>
+                <div class="press-release__image">
+                    <img src="<?= esc_url($picture['url']); ?>" alt="<?= esc_attr($picture['alt']); ?>">
+                </div>
+            <?php endif; ?>
 
-    <div class="press-release__content">
-        <?php if ($title): ?>
-        <h1 class="press-release__title"><?= esc_html($title); ?></h1>
-        <?php endif; ?>
+            <div class="press-release__content">
+                <?php if ($title): ?>
+                    <h1 class="press-release__title"><?= esc_html($title); ?></h1>
+                <?php endif; ?>
 
-        <?php if ($text): ?>
-        <div class="press-release__text">
-            <?= wp_kses_post($text); ?>
+                <?php if ($text): ?>
+                    <div class="press-release__text">
+                        <?= wp_kses_post($text); ?>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
-        <?php endif; ?>
-    </div>
     </section>
 </main>
 

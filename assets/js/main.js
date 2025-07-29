@@ -105,4 +105,30 @@ document.addEventListener("DOMContentLoaded", () => {
         msg.innerHTML = `<div class="form-error">Something went wrong. Please try again.</div>`;
       });
   });
+
+  // Story toggler
+  const textWrapper = document.querySelector(".story__text-wrapper");
+  const imageBlock = document.querySelector(".story__image");
+  const toggleBtn = document.querySelector(".story__toggle");
+  console.log("i am here");
+
+  if (!textWrapper || !imageBlock || !toggleBtn) {
+    return;
+  }
+
+  const imageHeight = imageBlock.offsetHeight;
+  textWrapper.style.maxHeight = `${imageHeight - 20}px`;
+
+  toggleBtn.addEventListener("click", function () {
+    const isExpanded = textWrapper.classList.toggle("expanded");
+
+    if (isExpanded) {
+      toggleBtn.textContent = "Read Less <-";
+      textWrapper.style.maxHeight = "10000px";
+    } else {
+      textWrapper.style.maxHeight = `${imageBlock.offsetHeight - 20}px`;
+
+      toggleBtn.textContent = "Read More";
+    }
+  });
 });
