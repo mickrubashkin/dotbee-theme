@@ -151,8 +151,8 @@ function dotbee_waitlist_form() {
 
   if ($sent_to_noreply) {
     error_log("Line 153 ok.");
-    error_log("Autoreply trigger OK. Sending autoreply to: " . $fields['email']);
-    wp_mail($fields['email'], $autoreply_subject, $autoreply_text, $headers);
+    error_log("Autoreply trigger OK. Sending autoreply to: " . $data['email']);
+    wp_mail($data['email'], $autoreply_subject, $autoreply_text, $headers);
     wp_send_json_success($message_success);
   } else {
     wp_send_json_error('Mail server error. Try again later.');
