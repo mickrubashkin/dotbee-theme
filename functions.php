@@ -76,11 +76,8 @@ function dotbee_waitlist_form() {
     wp_send_json_error('Captcha verification failed.');
   }
 
-  $email_admin = get_option('admin_email');
-  $email_mick = 'mikhail.rubashkin@gmail.com';
-  $email_hello = 'hello@dotbee.se';
-  $email_noreply = 'no-reply@dotbee.se';
 
+  // Sending form data to email
   $fields = ['name', 'company', 'email', 'phone', 'message'];
   $data = [];
   foreach ($fields as $field) {
@@ -94,6 +91,11 @@ function dotbee_waitlist_form() {
     $body .= ucfirst(str_replace('_', ' ', $k)) . ": " . $v . "\n";
   }
 
+    $email_admin = get_option('admin_email');
+  $email_mick = 'mikhail.rubashkin@gmail.com';
+  $email_hello = 'hello@dotbee.se';
+  $email_noreply = 'no-reply@dotbee.se';
+
   error_log("Sending email to: " . $email_admin);
   error_log("Email body:\n" . $body);
   $sent = wp_mail($email_admin, 'Waitlist Form Submission', $body);
@@ -101,7 +103,7 @@ function dotbee_waitlist_form() {
   $sent_to_hello = wp_mail($email_hello, 'Waitlist Form Submission', $body);
   $sent_to_noreply = wp_mail($email_noreply, 'Waitlist Form Submission', $body);
 
-  if ($sent_to_hello) {
+  if ($sent_to_noreply) {
     wp_send_json_success('Thank you! Your application has been received.');
   } else {
     wp_send_json_error('Mail server error. Try again later.');
