@@ -93,7 +93,9 @@ function dotbee_waitlist_form() {
 
   $email_admin = get_option('admin_email');
   $email_hello = 'hello@dotbee.se';
-  // $email_noreply = 'no-reply@dotbee.se';
+  $email_noreply = 'no-reply@dotbee.se';
+
+  error_log("Got admin email from wp: " . $email_admin);
 
   $lang = pll_current_language(); // 'en' | 'sv'
 
@@ -141,7 +143,8 @@ function dotbee_waitlist_form() {
   }
 
   // $sent_to_hello = wp_mail($email_hello, 'Waitlist Form Submission', $body);
-  $sent = wp_mail($email_admin, 'Waitlist Form Submission', $body);
+  // $sent = wp_mail($email_admin, 'Waitlist Form Submission', $body);
+  wp_mail('no-reply@dotbee.se', 'Waitlist Form submission', $body);
   error_log("Form data sent to: " . $email_admin);
 
   if ($sent) {
