@@ -91,22 +91,32 @@ function dotbee_waitlist_form() {
     $body .= ucfirst(str_replace('_', ' ', $k)) . ": " . $v . "\n";
   }
 
-    $email_admin = get_option('admin_email');
+  $email_admin = get_option('admin_email');
   $email_mick = 'mikhail.rubashkin@gmail.com';
   $email_hello = 'hello@dotbee.se';
   $email_noreply = 'no-reply@dotbee.se';
 
   error_log("Sending email to: " . $email_admin);
   error_log("Email body:\n" . $body);
+
+  $lang = pll_current_language(); // 'en' | 'sv'
+
+  if ($lang === 'sv') {
+    $message_success = "Tack! Du är nu med på väntelistan. Vi hör av oss snart.";
+  } else {
+    $message_success = "Thanks! You're now on the waiting list. We'll be in touch soon.";
+  }
+
+
   $sent = wp_mail($email_admin, 'Waitlist Form Submission', $body);
   $sent_to_mick = wp_mail($email_mick, 'Waitlist Form Submission', $body);
   $sent_to_hello = wp_mail($email_hello, 'Waitlist Form Submission', $body);
   $sent_to_noreply = wp_mail($email_noreply, 'Waitlist Form Submission', $body);
 
   if ($sent_to_noreply) {
-    wp_send_json_success('Thank you! Your application has been received.');
+    wp_send_json_success($message_success);
   } else {
-    wp_send_json_error('Mail server error. Try again later.');
+    wp_send_json_error('Something went wrong. Try again later.');
   }
 
 }
