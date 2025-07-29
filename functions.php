@@ -92,7 +92,6 @@ function dotbee_waitlist_form() {
   }
 
   $email_admin = get_option('admin_email');
-  $email_mick = 'mikhail.rubashkin@gmail.com';
   $email_hello = 'hello@dotbee.se';
   $email_noreply = 'no-reply@dotbee.se';
 
@@ -101,22 +100,58 @@ function dotbee_waitlist_form() {
 
   $lang = pll_current_language(); // 'en' | 'sv'
 
+  $headers = array('Content-Type: text/html; charset=UTF-8');
   if ($lang === 'sv') {
     $message_success = "Tack! Du är nu med på väntelistan. Vi hör av oss snart.";
+    $autoreply_subject = "Du är med på listan, tack för att du skrev upp dig!";
+        $autoreply_text = '
+<p><strong>Hej där! 👋</strong></p>
+
+<p>Stort tack för att du skrev upp dig, vi är glada att ha dig med! 🎉</p>
+
+<p>Du är nu officiellt med på vår väntelista, och vi hör av oss så snart vi kan.</p>
+
+<p>Tills dess, håll gärna utkik i inkorgen, och följ oss på <a href="https://www.linkedin.com/company/dotbee">LinkedIn</a> för de senaste uppdateringarna, insikterna och en inblick i vad vi bygger på Dotbee.</p>
+
+<p>Tveka inte att <a href="mailto:hello@dotbee.se">kontakta oss om du har några frågor</a>!</p>
+
+<p>📞 +46 10 641 45 30<br />
+📧 hello@dotbee.se</p>
+
+<p>Vi hörs!<br />
+<strong>Team Dotbee</strong></p>
+';
   } else {
     $message_success = "Thanks! You're now on the waiting list. We'll be in touch soon.";
+    $autoreply_subject = "You're on the list, thanks for signing up!";
+    $autoreply_text = '
+<p><strong>Hey there! 👋</strong></p>
+
+<p>Thank you so much for signing up, we’re happy to have you on board. 🎉</p>
+
+<p>You\'re now officially on our waiting list, and we\'ll get in touch as soon as we can.</p>
+
+<p>In the meantime, keep an eye on your inbox and feel free to <a href="https://www.linkedin.com/company/dotbee">follow us on LinkedIn</a> for the latest updates, insights, and a behind-the-scenes look at what we\'re building at Dotbee.</p>
+
+<p>Don\'t hesitate to <a href="mailto:hello@dotbee.se">reach out if you have any questions</a>!</p>
+
+<p>📞 +46 10 641 45 30<br />
+📧 hello@dotbee.se</p>
+
+<p>Talk soon!<br />
+<strong>Team Dotbee</strong></p>
+';
   }
 
-
-  $sent = wp_mail($email_admin, 'Waitlist Form Submission', $body);
-  $sent_to_mick = wp_mail($email_mick, 'Waitlist Form Submission', $body);
   $sent_to_hello = wp_mail($email_hello, 'Waitlist Form Submission', $body);
   $sent_to_noreply = wp_mail($email_noreply, 'Waitlist Form Submission', $body);
+  
 
   if ($sent_to_noreply) {
     wp_send_json_success($message_success);
+    wp_mail($fields['email'], $autoreply_subject, $autoreply_text, $headers);
   } else {
-    wp_send_json_error('Something went wrong. Try again later.');
+    wp_send_json_error('Mail server error. Try again later.');
   }
 
 }

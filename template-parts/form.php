@@ -72,7 +72,7 @@ if ($lang === 'sv') {
                     <input type="tel" name="phone" placeholder="<?php echo($placeholder_phone) ?>" required>
                 </div>
                 <div class="form-group">
-                    <textarea name="message" placeholder="<?php echo($placeholder_message) ?>" required></textarea>
+                    <textarea name="message" placeholder="<?php echo($placeholder_message) ?>"></textarea>
                 </div>
 
                 <?php if ($form_policy): ?>

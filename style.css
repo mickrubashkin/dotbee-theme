@@ -715,6 +715,22 @@ main {
   transform: scale(1.05);
 }
 
+#waitlist-form-message {
+  /* padding: 1em; */
+  border-radius: 5px;
+  margin-top: 2em;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.form-success {
+  padding: 1rem;
+}
+
+.form-error {
+  color: #a60000;
+}
+
 @media (max-width: 768px) {
   .waitlist__form button[type="submit"] {
     margin: 0 auto;
