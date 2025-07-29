@@ -11,7 +11,7 @@ $text = get_field('press_release_text');
 
 <main>
     <section class="press-release">
-        <div class="hero__hr"></div>
+        <!-- <div class="hero__hr"></div> -->
         <div class="press-release__inner">
             <?php if ($picture): ?>
                 <div class="press-release__image">

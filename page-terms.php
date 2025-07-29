@@ -12,7 +12,7 @@ $text = get_field('terms_text');
 
 <main>
     <section class="terms">
-        <div class="hero__hr"></div>
+        <!-- <div class="hero__hr"></div> -->
         <div class="terms__inner">
             <?php if ($picture): ?>
                 <div class="terms__image">
