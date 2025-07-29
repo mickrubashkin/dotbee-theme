@@ -142,14 +142,18 @@ function dotbee_waitlist_form() {
 ';
   }
 
-  // $sent_to_hello = wp_mail($email_hello, 'Waitlist Form Submission', $body);
-  // $sent = wp_mail($email_admin, 'Waitlist Form Submission', $body);
-  wp_mail('no-reply@dotbee.se', 'Waitlist Form submission', $body);
+  $sent = wp_mail($email_admin, 'Waitlist Form Submission', $body);
+
+  wp_mail($email_hello, 'Waitlist Form Submission', $body);
+  wp_mail($email_noreply, 'Waitlist Form submission', $body);
+
+  // Autoreply to user
+  wp_mail($data['email'], $autoreply_subject, $autoreply_text, $headers);
   error_log("Form data sent to: " . $email_admin);
 
   if ($sent) {
-    error_log("Autoreply trigger OK. Sending autoreply to: " . $data['email']);
-    wp_mail($data['email'], $autoreply_subject, $autoreply_text, $headers);
+    // error_log("Autoreply trigger OK. Sending autoreply to: " . $data['email']);
+    // wp_mail($data['email'], $autoreply_subject, $autoreply_text, $headers);
     wp_send_json_success($message_success);
   } else {
     wp_send_json_error('Mail server error. Try again later.');
