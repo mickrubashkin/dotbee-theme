@@ -124,7 +124,7 @@ $footer_terms_url = get_field('footer_terms_url', $footer_page_id);
     <div class="footer__copy">
       <div class="footer__hr"></div>
       <p>
-        <span>&copy; <?= date('Y'); ?> Dotbee. All rights reserved.</span>
+        <span>&copy; <?= date('Y'); ?> Dotbee AB. All rights reserved.</span>
         <?php if ($footer_orgnumber_title && $footer_orgnumber_value): ?>
           <span class="footer__vr">|</span>
           <span class="footer__orgnumber">

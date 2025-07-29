@@ -4,6 +4,7 @@ $recaptcha_config_path = get_template_directory() . '/recaptcha-config.php';
 if (file_exists($recaptcha_config_path)) {
   require_once $recaptcha_config_path;
 }
+
 function dotbee_theme_setup() {
   add_theme_support('title-tag');
   add_theme_support('post-thumbnails');
@@ -16,7 +17,6 @@ function dotbee_register_menus() {
   ]);
 }
 add_action('after_setup_theme', 'dotbee_register_menus');
-
 
 function dotbee_enqueue_scripts() {
   wp_enqueue_style('dotbee-style', get_stylesheet_uri());
@@ -76,11 +76,10 @@ function dotbee_waitlist_form() {
     wp_send_json_error('Captcha verification failed.');
   }
 
-  $admin_email = get_option('admin_email');
-  $email1 = 'mikhail.rubashkin@gmail.com';
-  $email2 = 'hello@dotbee.se';
-
-  // var_dump($admin_email);
+  $email_admin = get_option('admin_email');
+  $email_mick = 'mikhail.rubashkin@gmail.com';
+  $email_hello = 'hello@dotbee.se';
+  $email_noreply = 'no-reply@dotbee.se';
 
   $fields = ['name', 'company', 'email', 'phone', 'message'];
   $data = [];
@@ -88,28 +87,24 @@ function dotbee_waitlist_form() {
     $data[$field] = sanitize_text_field($_POST[$field] ?? '');
   }
 
-  // Validation example
-  if (empty($data['email']) || !is_email($data['email'])) {
-    wp_send_json_error('Please enter a valid email address.');
-  }
-  // if (empty($data['company']) || empty($data['job_title'])) {
-  //   wp_send_json_error('Fill in all required fields.');
-  // }
+  // [ ] Think about future validation.
 
   $body = "New waitlist form submission:\n\n";
   foreach ($data as $k => $v) {
     $body .= ucfirst(str_replace('_', ' ', $k)) . ": " . $v . "\n";
   }
 
-  error_log("Sending email to: " . $admin_email);
+  error_log("Sending email to: " . $email_admin);
   error_log("Email body:\n" . $body);
-  $sent = wp_mail($admin_email, 'Waitlist Form Submission', $body);
-  $sent_to_mickhail = wp_mail($email1, 'Waitlist Form Submission', $body);
-  $sent_to_hello = wp_mail($email2, 'Waitlist Form Submission', $body);
+  $sent = wp_mail($email_admin, 'Waitlist Form Submission', $body);
+  $sent_to_mick = wp_mail($email_mick, 'Waitlist Form Submission', $body);
+  $sent_to_hello = wp_mail($email_hello, 'Waitlist Form Submission', $body);
+  $sent_to_noreply = wp_mail($email_noreply, 'Waitlist Form Submission', $body);
 
-  if ($sent) {
+  if ($sent_to_hello) {
     wp_send_json_success('Thank you! Your application has been received.');
   } else {
     wp_send_json_error('Mail server error. Try again later.');
   }
+
 }

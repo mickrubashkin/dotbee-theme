@@ -460,6 +460,7 @@ main {
   height: auto;
   display: block;
   margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
 }
 
 .story__name {
