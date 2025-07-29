@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("test autodeploy from github");
   const burger = document.querySelector(".burger");
   const mobileMenu = document.querySelector(".header__mobile-menu");
 
@@ -110,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const textWrapper = document.querySelector(".story__text-wrapper");
   const imageBlock = document.querySelector(".story__image");
   const toggleBtn = document.querySelector(".story__toggle");
-  console.log("i am here");
 
   if (!textWrapper || !imageBlock || !toggleBtn) {
     return;
