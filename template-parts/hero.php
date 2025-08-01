@@ -7,7 +7,6 @@ $img = get_field('hero_image');
 ?>
 
 <section id="hero" class="hero color-section" data-bg="#FFF4EA">
-  <div class="hero__hr"></div>
   <div class="hero__inner">
     <div class="hero__content">
       <?php if ($title): ?>

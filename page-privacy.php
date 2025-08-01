@@ -11,7 +11,6 @@ $text = get_field('privacy_policy_text');
 
 <main>
     <section class="privacy-policy">
-        <!-- <div class="hero__hr"></div> -->
         <div class="privacy-policy__inner">
             <?php if ($picture): ?>
                 <div class="privacy-policy__image">
