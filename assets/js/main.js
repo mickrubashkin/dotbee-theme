@@ -106,27 +106,40 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Story toggler
-  const textWrapper = document.querySelector(".story__text-wrapper");
-  const imageBlock = document.querySelector(".story__image");
-  const toggleBtn = document.querySelector(".story__toggle");
+  const textBlock = document.querySelector(".story__text");
+  const toggleBtnWrapper = document.querySelector(".story__toggle-wrapper");
+  const toggleBtnMore = document.querySelector(".story__toggle--more");
+  const toggleBtnLess = document.querySelector(".story__toggle--less");
 
-  if (!textWrapper || !imageBlock || !toggleBtn) {
+  if (!textBlock || !toggleBtnWrapper || !toggleBtnMore || !toggleBtnLess) {
     return;
   }
 
-  const imageHeight = imageBlock.offsetHeight;
-  textWrapper.style.maxHeight = `${imageHeight - 20}px`;
-
-  toggleBtn.addEventListener("click", function () {
-    const isExpanded = textWrapper.classList.toggle("expanded");
+  toggleBtnMore.addEventListener("click", function () {
+    const isExpanded = textBlock.classList.toggle("expanded");
 
     if (isExpanded) {
-      toggleBtn.textContent = "Read Less <-";
-      textWrapper.style.maxHeight = "10000px";
+      toggleBtnWrapper.style.justifyContent = "flex-end";
+      toggleBtnMore.style.display = "none";
+      toggleBtnLess.style.display = "block";
     } else {
-      textWrapper.style.maxHeight = `${imageBlock.offsetHeight - 20}px`;
+      toggleBtnWrapper.style.justifyContent = "flex-start";
+      toggleBtnMore.style.display = "block";
+      toggleBtnLess.style.display = "none";
+    }
+  });
 
-      toggleBtn.textContent = "Read More";
+  toggleBtnLess.addEventListener("click", function () {
+    const isExpanded = textBlock.classList.toggle("expanded");
+
+    if (isExpanded) {
+      toggleBtnWrapper.style.justifyContent = "flex-end";
+      toggleBtnMore.style.display = "none";
+      toggleBtnLess.style.display = "block";
+    } else {
+      toggleBtnWrapper.style.justifyContent = "flex-start";
+      toggleBtnMore.style.display = "block";
+      toggleBtnLess.style.display = "none";
     }
   });
 });
