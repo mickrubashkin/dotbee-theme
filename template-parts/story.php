@@ -8,8 +8,8 @@ $footer = get_field('story_footer');
 $current_lang = pll_current_language();
 
 if ($current_lang === 'sv') {
-  $toggleReadMore = 'Läs artikeln';
-  $toggleReadLess = 'Minimera';
+  $toggleReadMore = 'Läs mer';
+  $toggleReadLess = 'Läs mindre';
 } else {
   $toggleReadMore = 'Read More';
   $toggleReadLess = 'Read Less';
