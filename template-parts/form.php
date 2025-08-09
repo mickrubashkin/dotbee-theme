@@ -34,16 +34,16 @@ if ($lang === 'sv') {
                 <input type="hidden" name="form_start" id="form_start">
 
                 <div class="form-group">
-                    <input type="text" name="name" placeholder="<?php echo($placeholder_name) ?>" required>
+                    <input type="text" name="name" autocomplete="name" placeholder="<?php echo($placeholder_name) ?>" required>
                 </div>
                 <div class="form-group">
                     <input type="text" name="company" placeholder="<?php echo($placeholder_company) ?>">
                 </div>
                 <div class="form-group">
-                    <input type="email" name="email" placeholder="<?php echo($placeholder_email) ?>" required>
+                    <input type="email" name="email" autocomplete="email" placeholder="<?php echo($placeholder_email) ?>" required>
                 </div>
                 <div class="form-group">
-                    <input type="tel" name="phone" placeholder="<?php echo($placeholder_phone) ?>" required>
+                    <input type="tel" name="phone" autocomplete="tel" placeholder="<?php echo($placeholder_phone) ?>" required>
                 </div>
                 <div class="form-group">
                     <textarea name="message" placeholder="<?php echo($placeholder_message) ?>"></textarea>

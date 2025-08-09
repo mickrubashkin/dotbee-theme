@@ -93,7 +93,7 @@ function dotbee_waitlist_form() {
 
   $email_admin = get_option('admin_email');
   $email_hello = 'hello@dotbee.se';
-  $email_noreply = 'no-reply@dotbee.se';
+  $email_mikky = 'Mikael.efron@dotbee.se';
 
   error_log("Got admin email from wp: " . $email_admin);
 
@@ -145,7 +145,7 @@ function dotbee_waitlist_form() {
   $sent = wp_mail($email_admin, 'Waitlist Form Submission', $body);
 
   wp_mail($email_hello, 'Waitlist Form Submission', $body);
-  wp_mail($email_noreply, 'Waitlist Form submission', $body);
+  wp_mail($email_mikky, 'Waitlist Form submission', $body);
 
   // Autoreply to user
   wp_mail($data['email'], $autoreply_subject, $autoreply_text, $headers);
