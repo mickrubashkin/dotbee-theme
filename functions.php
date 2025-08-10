@@ -293,15 +293,21 @@ add_action('template_redirect', function () {
   get_header();
   ?>
   <style>
-    .waitlist-wrap{max-width:1100px;margin:40px auto;padding:0 20px}
+    .waitlist-wrap{max-width:1250px;margin:0 auto;padding:0 10px}
     .waitlist-actions{margin:16px 0;display:flex;gap:12px}
     .btn{display:inline-block;padding:8px 12px;border:1px solid #111827;border-radius:8px;text-decoration:none;color:#111827}
     .btn-primary{background:#111827;color:#fff}
-    .waitlist-table{width:100%;border-collapse:collapse}
-    .waitlist-table th,.waitlist-table td{padding:10px 12px;border-bottom:1px solid #e5e7eb;vertical-align:top}
-    .waitlist-table th{background:#f8fafc;text-align:left;font-weight:600}
+    /* Lightweight Bootstrap-like table styles */
+    .table { width:100%; margin-bottom:1rem; color:#212529; border-collapse: collapse; }
+    .table th, .table td { padding:0.75rem; vertical-align: top; border-top:1px solid #dee2e6; }
+    .table thead th { vertical-align: bottom; border-bottom:2px solid #dee2e6; background:#f8fafc; font-weight:600; text-align:left; }
+    .table-striped tbody tr:nth-of-type(odd) { background-color: rgba(0,0,0,.03); }
+    .table-hover tbody tr:hover { background-color: rgba(0,0,0,.06); }
+    .table-responsive { display:block; width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .table-responsive > .table { margin-bottom:0; }
+
     .waitlist-empty{padding:24px;background:#fffbea;border:1px solid #fde68a;border-radius:8px}
-    .waitlist-pager{margin-top:16px;display:flex;gap:8px}
+    .waitlist-pager{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
     .waitlist-pager a,.waitlist-pager span{padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;text-decoration:none}
     .waitlist-pager .current{background:#111827;color:#fff;border-color:#111827}
   </style>
@@ -312,29 +318,31 @@ add_action('template_redirect', function () {
     </div>
 
     <?php if ($rows): ?>
-      <table class="waitlist-table">
-        <thead>
-        <tr>
-          <th>ID</th><th>Date</th><th>Name</th><th>Company</th>
-          <th>Email</th><th>Phone</th><th>Message</th><th>Lang</th><th>IP</th>
-        </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($rows as $r): ?>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead>
           <tr>
-            <td><?php echo esc_html($r['id']); ?></td>
-            <td><?php echo esc_html($r['created_at']); ?></td>
-            <td><?php echo esc_html($r['name']); ?></td>
-            <td><?php echo esc_html($r['company']); ?></td>
-            <td><a href="mailto:<?php echo esc_attr($r['email']); ?>"><?php echo esc_html($r['email']); ?></a></td>
-            <td><?php echo esc_html($r['phone']); ?></td>
-            <td><?php echo esc_html(mb_strimwidth(wp_strip_all_tags($r['message']), 0, 140, '…')); ?></td>
-            <td><?php echo esc_html($r['lang']); ?></td>
-            <td><?php echo esc_html($r['ip']); ?></td>
+            <th>ID</th><th>Date</th><th>Name</th><th>Company</th>
+            <th>Email</th><th>Phone</th><th>Message</th><th>Lang</th><th>IP</th>
           </tr>
-        <?php endforeach; ?>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+          <?php foreach ($rows as $r): ?>
+            <tr>
+              <td><?php echo esc_html($r['id']); ?></td>
+              <td><?php echo esc_html($r['created_at']); ?></td>
+              <td><?php echo esc_html($r['name']); ?></td>
+              <td><?php echo esc_html($r['company']); ?></td>
+              <td><a href="mailto:<?php echo esc_attr($r['email']); ?>"><?php echo esc_html($r['email']); ?></a></td>
+              <td><?php echo esc_html($r['phone']); ?></td>
+              <td><?php echo esc_html(mb_strimwidth(wp_strip_all_tags($r['message']), 0, 140, '…')); ?></td>
+              <td><?php echo esc_html($r['lang']); ?></td>
+              <td><?php echo esc_html($r['ip']); ?></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
       <?php
       $pages = (int) ceil($total / $per_page);
       if ($pages > 1) {
