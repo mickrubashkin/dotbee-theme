@@ -187,29 +187,36 @@ function dotbee_waitlist_form() {
 
 // === DOTBEE WAITLIST: START ===
 
-// 1) Создаём таблицу
-add_action('after_switch_theme', function () {
+// Ensure waitlist table exists (can be called from anywhere)
+function dotbee_waitlist_ensure_table() {
   global $wpdb;
   $table = $wpdb->prefix . 'dotbee_waitlist';
-  $charset = $wpdb->get_charset_collate();
-  $sql = "CREATE TABLE IF NOT EXISTS $table (
-    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    created_at DATETIME NOT NULL,
-    name VARCHAR(190) DEFAULT '' NOT NULL,
-    company VARCHAR(190) DEFAULT '' NOT NULL,
-    email VARCHAR(190) DEFAULT '' NOT NULL,
-    phone VARCHAR(190) DEFAULT '' NOT NULL,
-    message TEXT,
-    lang VARCHAR(10) DEFAULT '' NOT NULL,
-    ip VARCHAR(45) DEFAULT '' NOT NULL,
-    ua TEXT,
-    PRIMARY KEY (id),
-    KEY created_at (created_at),
-    KEY email (email)
-  ) $charset;";
-  require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-  dbDelta($sql);
-  // Flush rewrite rules once on theme switch so /wait-list starts working
+  // If table is missing, create it
+  if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table)) !== $table) {
+    $charset = $wpdb->get_charset_collate();
+    $sql = "CREATE TABLE IF NOT EXISTS $table (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      created_at DATETIME NOT NULL,
+      name VARCHAR(190) DEFAULT '' NOT NULL,
+      company VARCHAR(190) DEFAULT '' NOT NULL,
+      email VARCHAR(190) DEFAULT '' NOT NULL,
+      phone VARCHAR(190) DEFAULT '' NOT NULL,
+      message TEXT,
+      lang VARCHAR(10) DEFAULT '' NOT NULL,
+      ip VARCHAR(45) DEFAULT '' NOT NULL,
+      ua TEXT,
+      PRIMARY KEY (id),
+      KEY created_at (created_at),
+      KEY email (email)
+    ) $charset;";
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta($sql);
+  }
+}
+
+// 1) Создаём таблицу
+add_action('after_switch_theme', function () {
+  dotbee_waitlist_ensure_table();
   flush_rewrite_rules();
 });
 
@@ -256,78 +263,9 @@ add_action('template_redirect', function () {
     wp_die('You do not have permissions to view this page.', 'Forbidden', ['response' => 403]);
   }
 
+  dotbee_waitlist_ensure_table();
   global $wpdb;
   $table = $wpdb->prefix . 'dotbee_waitlist';
-
-  // import CSV
-  if (
-    isset($_POST['dotbee_import_csv']) &&
-    wp_verify_nonce($_POST['_wpnonce'] ?? '', 'dotbee_import') &&
-    current_user_can('manage_options') &&
-    isset($_FILES['csv']) &&
-    is_uploaded_file($_FILES['csv']['tmp_name'])
-  ) {
-    $imported = 0; $errors = 0;
-    $fh = fopen($_FILES['csv']['tmp_name'], 'r');
-    if ($fh) {
-      // read header
-      $header = fgetcsv($fh, 0, ',');
-      if ($header) {
-        // map headers -> index (case-insensitive, trimmed)
-        $map = [];
-        foreach ($header as $i => $h) {
-          $key = strtolower(trim($h));
-          $map[$key] = $i;
-        }
-        while (($row = fgetcsv($fh, 0, ',')) !== false) {
-          $get = function($key) use ($map, $row) {
-            if (!isset($map[$key])) return '';
-            $v = $row[$map[$key]] ?? '';
-            return is_string($v) ? trim($v) : '';
-          };
-
-          $created_at = $get('date');
-          // Normalize date if we can, otherwise use now
-          if ($created_at) {
-            $ts = strtotime($created_at);
-            if ($ts) { $created_at = date('Y-m-d H:i:s', $ts); }
-            else { $created_at = current_time('mysql'); }
-          } else {
-            $created_at = current_time('mysql');
-          }
-
-          $args = [
-            'name'    => $get('name'),
-            'company' => $get('company'),
-            'email'   => $get('email'),
-            'phone'   => $get('phone'),
-            'message' => $get('message'),
-            'lang'    => '',
-          ];
-
-          // basic email sanity
-          if (!empty($args['email']) && is_email($args['email'])) {
-            $ok = dotbee_waitlist_store($args);
-            if ($ok) {
-              // override created_at if provided in CSV
-              $last_id = $wpdb->insert_id;
-              $wpdb->update($table, ['created_at' => $created_at], ['id' => $last_id], ['%s'], ['%d']);
-              $imported++;
-            } else {
-              $errors++;
-            }
-          } else {
-            $errors++;
-          }
-        }
-      }
-      fclose($fh);
-    }
-    // Put a notice that we can show above the table
-    add_action('admin_notices', function() use ($imported, $errors) {
-      echo '<div class="notice notice-success"><p>Imported: '.intval($imported).', Errors: '.intval($errors).'</p></div>';
-    });
-  }
 
   // экспорт CSV
   if (isset($_GET['export']) && wp_verify_nonce($_GET['_wpnonce'] ?? '', 'dotbee_export')) {
@@ -371,11 +309,6 @@ add_action('template_redirect', function () {
     <h1>Waitlist</h1>
     <div class="waitlist-actions">
       <a class="btn btn-primary" href="<?php echo esc_url($export_url); ?>">Export CSV</a>
-      <form method="post" enctype="multipart/form-data" style="display:flex; gap:8px; align-items:center">
-        <?php wp_nonce_field('dotbee_import'); ?>
-        <input type="file" name="csv" accept=".csv" required />
-        <button type="submit" name="dotbee_import_csv" class="btn">Import CSV</button>
-      </form>
     </div>
 
     <?php if ($rows): ?>
@@ -423,10 +356,11 @@ add_action('template_redirect', function () {
 });
 // === DOTBEE WAITLIST: END ===
 
-add_action('after_setup_theme', function () {
-  if (get_transient('dotbee_waitlist_import_done')) {
+add_action('init', function () {
+  if (get_option('dotbee_waitlist_seed_done')) {
     return;
   }
+  dotbee_waitlist_ensure_table();
   global $wpdb;
   $table = $wpdb->prefix . 'dotbee_waitlist';
   $rows = [
@@ -453,5 +387,5 @@ add_action('after_setup_theme', function () {
       'ua'         => ''
     ], ['%s','%s','%s','%s','%s','%s','%s','%s','%s']);
   }
-  set_transient('dotbee_waitlist_import_done', 1, DAY_IN_SECONDS * 365);
+  update_option('dotbee_waitlist_seed_done', 1, true);
 });
