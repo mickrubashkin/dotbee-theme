@@ -81,10 +81,17 @@ function dotbee_waitlist_form() {
   $fields = ['name', 'company', 'email', 'phone', 'message'];
   $data = [];
   foreach ($fields as $field) {
-    $data[$field] = sanitize_text_field($_POST[$field] ?? '');
+    if ($field === 'email') {
+      $data[$field] = sanitize_email($_POST[$field] ?? '');
+    } else {
+      $data[$field] = sanitize_text_field($_POST[$field] ?? '');
+    }
   }
 
-  // [ ] Think about future validation.
+  // Basic validation
+  if (empty($data['email']) || !is_email($data['email'])) {
+    wp_send_json_error('Invalid email.');
+  }
 
   $body = "New waitlist form submission:\n\n";
   foreach ($data as $k => $v) {
@@ -97,9 +104,19 @@ function dotbee_waitlist_form() {
 
   error_log("Got admin email from wp: " . $email_admin);
 
-  $lang = pll_current_language(); // 'en' | 'sv'
+  $lang = function_exists('pll_current_language') ? pll_current_language() : 'en'; // 'en' | 'sv'
 
-  $headers = array('Content-Type: text/html; charset=UTF-8');
+  // Headers
+  // Admin notifications: reply goes to the user who filled the form
+  $headers_admin = array(
+    'Content-Type: text/plain; charset=UTF-8',
+    'Reply-To: ' . $data['email']
+  );
+  // Autoreply to user: reply goes to our support inbox
+  $headers_user = array(
+    'Content-Type: text/html; charset=UTF-8',
+    'Reply-To: hello@dotbee.se'
+  );
   if ($lang === 'sv') {
     $message_success = "Tack! Du är nu med på väntelistan. Vi hör av oss snart.";
     $autoreply_subject = "Du är med på listan, tack för att du skrev upp dig!";
@@ -142,21 +159,292 @@ function dotbee_waitlist_form() {
 ';
   }
 
-  $sent = wp_mail($email_admin, 'Waitlist Form Submission', $body);
+  $sent = wp_mail($email_admin, 'Waitlist Form Submission', $body, $headers_admin);
 
-  wp_mail($email_hello, 'Waitlist Form Submission', $body);
-  wp_mail($email_mikky, 'Waitlist Form submission', $body);
+  // wp_mail($email_hello, 'Waitlist Form Submission', $body, $headers_admin);
+  wp_mail($email_mikky, 'Waitlist Form submission', $body, $headers_admin);
 
   // Autoreply to user
-  wp_mail($data['email'], $autoreply_subject, $autoreply_text, $headers);
+  wp_mail($data['email'], $autoreply_subject, $autoreply_text, $headers_user);
   error_log("Form data sent to: " . $email_admin);
 
+  // Save to DB before responding
+  dotbee_waitlist_store([
+    'name'    => $data['name'] ?? '',
+    'company' => $data['company'] ?? '',
+    'email'   => $data['email'] ?? '',
+    'phone'   => $data['phone'] ?? '',
+    'message' => $data['message'] ?? '',
+    'lang'    => $lang,
+  ]);
+
   if ($sent) {
-    // error_log("Autoreply trigger OK. Sending autoreply to: " . $data['email']);
-    // wp_mail($data['email'], $autoreply_subject, $autoreply_text, $headers);
     wp_send_json_success($message_success);
   } else {
     wp_send_json_error('Mail server error. Try again later.');
   }
-
 }
+
+// === DOTBEE WAITLIST: START ===
+
+// 1) Создаём таблицу
+add_action('after_switch_theme', function () {
+  global $wpdb;
+  $table = $wpdb->prefix . 'dotbee_waitlist';
+  $charset = $wpdb->get_charset_collate();
+  $sql = "CREATE TABLE IF NOT EXISTS $table (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    created_at DATETIME NOT NULL,
+    name VARCHAR(190) DEFAULT '' NOT NULL,
+    company VARCHAR(190) DEFAULT '' NOT NULL,
+    email VARCHAR(190) DEFAULT '' NOT NULL,
+    phone VARCHAR(190) DEFAULT '' NOT NULL,
+    message TEXT,
+    lang VARCHAR(10) DEFAULT '' NOT NULL,
+    ip VARCHAR(45) DEFAULT '' NOT NULL,
+    ua TEXT,
+    PRIMARY KEY (id),
+    KEY created_at (created_at),
+    KEY email (email)
+  ) $charset;";
+  require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+  dbDelta($sql);
+});
+
+// 2) Хелпер: сохранить заявку (вызываем из твоего AJAX-хендлера)
+function dotbee_waitlist_store($args = []) {
+  global $wpdb;
+  $table = $wpdb->prefix . 'dotbee_waitlist';
+  $row = [
+    'created_at' => current_time('mysql'),
+    'name'       => sanitize_text_field($args['name'] ?? ''),
+    'company'    => sanitize_text_field($args['company'] ?? ''),
+    'email'      => sanitize_email($args['email'] ?? ''),
+    'phone'      => sanitize_text_field($args['phone'] ?? ''),
+    'message'    => wp_kses_post($args['message'] ?? ''),
+    'lang'       => sanitize_text_field($args['lang'] ?? ''),
+    'ip'         => sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? ''),
+    'ua'         => sanitize_textarea_field($_SERVER['HTTP_USER_AGENT'] ?? ''),
+  ];
+  return (bool) $wpdb->insert(
+    $table, $row, ['%s','%s','%s','%s','%s','%s','%s','%s','%s']
+  );
+}
+
+// 4) Виртуальный роут /wait-list (без создания страницы)
+add_action('init', function () {
+  add_rewrite_rule('^wait-list/?$', 'index.php?dotbee_waitlist=1', 'top');
+  add_rewrite_tag('%dotbee_waitlist%', '1');
+});
+
+// 5) Рендерим страницу для админов
+add_action('template_redirect', function () {
+  if (!get_query_var('dotbee_waitlist')) return;
+
+  if (!is_user_logged_in()) {
+    auth_redirect(); // редирект на логин и обратно
+    exit;
+  }
+  if (!current_user_can('manage_options')) {
+    wp_die('You do not have permissions to view this page.', 'Forbidden', ['response' => 403]);
+  }
+
+  global $wpdb;
+  $table = $wpdb->prefix . 'dotbee_waitlist';
+
+  // import CSV
+  if (
+    isset($_POST['dotbee_import_csv']) &&
+    wp_verify_nonce($_POST['_wpnonce'] ?? '', 'dotbee_import') &&
+    current_user_can('manage_options') &&
+    isset($_FILES['csv']) &&
+    is_uploaded_file($_FILES['csv']['tmp_name'])
+  ) {
+    $imported = 0; $errors = 0;
+    $fh = fopen($_FILES['csv']['tmp_name'], 'r');
+    if ($fh) {
+      // read header
+      $header = fgetcsv($fh, 0, ',');
+      if ($header) {
+        // map headers -> index (case-insensitive, trimmed)
+        $map = [];
+        foreach ($header as $i => $h) {
+          $key = strtolower(trim($h));
+          $map[$key] = $i;
+        }
+        while (($row = fgetcsv($fh, 0, ',')) !== false) {
+          $get = function($key) use ($map, $row) {
+            if (!isset($map[$key])) return '';
+            $v = $row[$map[$key]] ?? '';
+            return is_string($v) ? trim($v) : '';
+          };
+
+          $created_at = $get('date');
+          // Normalize date if we can, otherwise use now
+          if ($created_at) {
+            $ts = strtotime($created_at);
+            if ($ts) { $created_at = date('Y-m-d H:i:s', $ts); }
+            else { $created_at = current_time('mysql'); }
+          } else {
+            $created_at = current_time('mysql');
+          }
+
+          $args = [
+            'name'    => $get('name'),
+            'company' => $get('company'),
+            'email'   => $get('email'),
+            'phone'   => $get('phone'),
+            'message' => $get('message'),
+            'lang'    => '',
+          ];
+
+          // basic email sanity
+          if (!empty($args['email']) && is_email($args['email'])) {
+            $ok = dotbee_waitlist_store($args);
+            if ($ok) {
+              // override created_at if provided in CSV
+              $last_id = $wpdb->insert_id;
+              $wpdb->update($table, ['created_at' => $created_at], ['id' => $last_id], ['%s'], ['%d']);
+              $imported++;
+            } else {
+              $errors++;
+            }
+          } else {
+            $errors++;
+          }
+        }
+      }
+      fclose($fh);
+    }
+    // Put a notice that we can show above the table
+    add_action('admin_notices', function() use ($imported, $errors) {
+      echo '<div class="notice notice-success"><p>Imported: '.intval($imported).', Errors: '.intval($errors).'</p></div>';
+    });
+  }
+
+  // экспорт CSV
+  if (isset($_GET['export']) && wp_verify_nonce($_GET['_wpnonce'] ?? '', 'dotbee_export')) {
+    $rows = $wpdb->get_results("SELECT * FROM $table ORDER BY id DESC", ARRAY_A);
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=waitlist.csv');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, ['id','created_at','name','company','email','phone','message','lang','ip','ua']);
+    foreach ($rows as $r) fputcsv($out, $r);
+    fclose($out);
+    exit;
+  }
+
+  $per_page = 20;
+  $page     = max(1, intval($_GET['paged'] ?? 1));
+  $offset   = ($page - 1) * $per_page;
+
+  $total = (int) $wpdb->get_var("SELECT COUNT(*) FROM $table");
+  $rows  = $wpdb->get_results(
+    $wpdb->prepare("SELECT * FROM $table ORDER BY id DESC LIMIT %d OFFSET %d", $per_page, $offset),
+    ARRAY_A
+  );
+  $export_url = wp_nonce_url(add_query_arg(['export' => 1]), 'dotbee_export');
+
+  get_header();
+  ?>
+  <style>
+    .waitlist-wrap{max-width:1100px;margin:40px auto;padding:0 20px}
+    .waitlist-actions{margin:16px 0;display:flex;gap:12px}
+    .btn{display:inline-block;padding:8px 12px;border:1px solid #111827;border-radius:8px;text-decoration:none;color:#111827}
+    .btn-primary{background:#111827;color:#fff}
+    .waitlist-table{width:100%;border-collapse:collapse}
+    .waitlist-table th,.waitlist-table td{padding:10px 12px;border-bottom:1px solid #e5e7eb;vertical-align:top}
+    .waitlist-table th{background:#f8fafc;text-align:left;font-weight:600}
+    .waitlist-empty{padding:24px;background:#fffbea;border:1px solid #fde68a;border-radius:8px}
+    .waitlist-pager{margin-top:16px;display:flex;gap:8px}
+    .waitlist-pager a,.waitlist-pager span{padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;text-decoration:none}
+    .waitlist-pager .current{background:#111827;color:#fff;border-color:#111827}
+  </style>
+  <div class="waitlist-wrap">
+    <h1>Waitlist</h1>
+    <div class="waitlist-actions">
+      <a class="btn btn-primary" href="<?php echo esc_url($export_url); ?>">Export CSV</a>
+      <form method="post" enctype="multipart/form-data" style="display:flex; gap:8px; align-items:center">
+        <?php wp_nonce_field('dotbee_import'); ?>
+        <input type="file" name="csv" accept=".csv" required />
+        <button type="submit" name="dotbee_import_csv" class="btn">Import CSV</button>
+      </form>
+    </div>
+
+    <?php if ($rows): ?>
+      <table class="waitlist-table">
+        <thead>
+        <tr>
+          <th>ID</th><th>Date</th><th>Name</th><th>Company</th>
+          <th>Email</th><th>Phone</th><th>Message</th><th>Lang</th><th>IP</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($rows as $r): ?>
+          <tr>
+            <td><?php echo esc_html($r['id']); ?></td>
+            <td><?php echo esc_html($r['created_at']); ?></td>
+            <td><?php echo esc_html($r['name']); ?></td>
+            <td><?php echo esc_html($r['company']); ?></td>
+            <td><a href="mailto:<?php echo esc_attr($r['email']); ?>"><?php echo esc_html($r['email']); ?></a></td>
+            <td><?php echo esc_html($r['phone']); ?></td>
+            <td><?php echo esc_html(mb_strimwidth(wp_strip_all_tags($r['message']), 0, 140, '…')); ?></td>
+            <td><?php echo esc_html($r['lang']); ?></td>
+            <td><?php echo esc_html($r['ip']); ?></td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
+      <?php
+      $pages = (int) ceil($total / $per_page);
+      if ($pages > 1) {
+        echo '<div class="waitlist-pager">';
+        for ($i=1; $i <= $pages; $i++) {
+          if ($i === $page) echo '<span class="current">'.$i.'</span>';
+          else echo '<a href="'.esc_url(add_query_arg('paged', $i)).'">'.$i.'</a>';
+        }
+        echo '</div>';
+      }
+      ?>
+    <?php else: ?>
+      <div class="waitlist-empty">No submissions yet.</div>
+    <?php endif; ?>
+  </div>
+  <?php
+  get_footer();
+  exit;
+});
+// === DOTBEE WAITLIST: END ===
+
+add_action('after_setup_theme', function () {
+  if (get_transient('dotbee_waitlist_import_done')) {
+    return;
+  }
+  global $wpdb;
+  $table = $wpdb->prefix . 'dotbee_waitlist';
+  $rows = [
+    ['2025-07-29 21:42','Robert Sjöberg','Helantus AB','robert.sjoeberg@gmail.com','707677233',''],
+    ['2025-07-29 23:07','Rikard','Bergius Indusium','rikardberggren91@gmail.com','725328444',''],
+    ['2025-07-30 10:36','Johan JC Carlberg','Buyn','johan.carlberg@buyn.se','760160768','Intresserade av er tjänst för kommunikation med butikskunder. T.ex: "Ditt paket med ordernr #### är färdigt att hämtas, vi syns på " Om det är möjligt att lösa/automatisera med öppet API hos vår webshopsleverantör så är ni intresssanta att ha dialog med.'],
+    ['2025-07-30 11:05','Kristofer Österberg','AIK amerikansk fotboll','info@aikamfotboll.se','706644667',''],
+    ['2025-07-30 14:54','Fredrik Svedberg','Logtrade Technology','fredrik.svedberg@logtrade.se','+46703162680',''],
+    ['2025-07-30 15:49','Jack Johnson','Cisco','jackj21@cisco.com','+447842793206','Fantastic news and good luck guys, what a journey it’s going to be!'],
+    ['2025-07-30 17:29','Mikael Kvant','Hyrverket','mikael@hyrverket.se','+46708130000','Nyfiken...'],
+    ['2025-07-30 22:34','Johan Hägglund','','johan.hagglund24@gmail.com','+46703361202',''],
+    ['2025-08-01 22:02','Mårten Pettersson','Bizt Application Management AB','m@bizt.se','707584172',''],
+  ];
+  foreach ($rows as $r) {
+    $wpdb->insert($table, [
+      'created_at' => $r[0],
+      'name'       => $r[1],
+      'company'    => $r[2],
+      'email'      => $r[3],
+      'phone'      => $r[4],
+      'message'    => $r[5],
+      'lang'       => '',
+      'ip'         => '',
+      'ua'         => ''
+    ], ['%s','%s','%s','%s','%s','%s','%s','%s','%s']);
+  }
+  set_transient('dotbee_waitlist_import_done', 1, DAY_IN_SECONDS * 365);
+});
