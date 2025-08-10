@@ -100,7 +100,7 @@ function dotbee_waitlist_form() {
 
   $email_admin = get_option('admin_email');
   $email_hello = 'hello@dotbee.se';
-  $email_mikky = 'Mikael.efron@dotbee.se';
+  $email_mikky = 'mikael.efron@dotbee.se';
 
   error_log("Got admin email from wp: " . $email_admin);
 
@@ -209,6 +209,8 @@ add_action('after_switch_theme', function () {
   ) $charset;";
   require_once ABSPATH . 'wp-admin/includes/upgrade.php';
   dbDelta($sql);
+  // Flush rewrite rules once on theme switch so /wait-list starts working
+  flush_rewrite_rules();
 });
 
 // 2) Хелпер: сохранить заявку (вызываем из твоего AJAX-хендлера)
@@ -234,7 +236,12 @@ function dotbee_waitlist_store($args = []) {
 // 4) Виртуальный роут /wait-list (без создания страницы)
 add_action('init', function () {
   add_rewrite_rule('^wait-list/?$', 'index.php?dotbee_waitlist=1', 'top');
-  add_rewrite_tag('%dotbee_waitlist%', '1');
+});
+
+// Register custom query var so WP keeps it in the main query
+add_filter('query_vars', function ($vars) {
+  $vars[] = 'dotbee_waitlist';
+  return $vars;
 });
 
 // 5) Рендерим страницу для админов
