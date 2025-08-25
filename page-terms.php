@@ -27,7 +27,7 @@ $text = get_field('terms_text');
                 
                 <ul class="terms-links">
                     <li><a class="terms-link" href="/wp-content/uploads/2025/08/Allmanna-villkor-Dotbee-2025-07-01.pdf" target="_blank">Allmänna villkor</a></li>
-                    <li><a class="terms-link" href="wp-content/uploads/2025/08/General-Terms-and-Conditions-Dotbee-2025-07-01.pdf" target="_blank">General Terms And Conditions</a></li>
+                    <li><a class="terms-link" href="https://dotbee.se/wp-content/uploads/2025/08/General-Terms-and-Conditions-Dotbee-2025-07-01.pdf" target="_blank">General Terms And Conditions</a></li>
                     <li><a class="terms-link" href="/wp-content/uploads/2025/08/Personuppgiftsbitradesavtal-Dotbee.pdf" target="_blank">Personuppgiftbiträdesavtal</a></li>
                     <li><a class="terms-link" href="/wp-content/uploads/2025/08/Data-Processing-Agreement-Dotbee.pdf" target="_blank">Data processing agreement</a></li>
                 </ul>
